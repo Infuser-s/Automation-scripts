@@ -1,0 +1,25 @@
+This projevt is parameterized
+  Name: docker_image_url
+  Default Value: 934166022011.dkr.ecr.us-east-1.amazonaws.com/docker-registry:rom-realtime-data-3
+  Description: 934166022011.dkr.ecr.us-east-1.amazonaws.com/docker-registry:rom-realtime-data-3
+Pepeline script
+
+=============================================================
+  node{
+  stage('SSH into machine and deploy the docker imagee'){
+      
+      sshagent(credentials: ['ec2-user-dev']) {
+          
+          
+             sh """
+             
+             ssh -o StrictHostKeyChecking=no -l ec2-user 172.31.64.62 sh /opt/deploy.sh ${docker_image_url}
+     
+             """
+      
+          
+          
+      }
+   
+  }
+}
