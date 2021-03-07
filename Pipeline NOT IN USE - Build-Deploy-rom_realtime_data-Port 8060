@@ -1,0 +1,29 @@
+Build & Deploy 1st Java test application with H2 DB.
+Build Triggers
+  Disable this project
+Pipeline
+  Pipeline script
+  ========================================
+  
+  node{
+  stage('Git Checkout'){
+    sh "rm -rf $WORKSPACE/*"
+    git 'https://github.com/Infuser-s/rom_realtime_data.git'
+  }
+  stage('MVN Package'){
+    def mvnHome = tool name: 'maven-3', type: 'maven'
+    sh "${mvnHome}/bin/mvn clean package"
+  }
+  stage('Image creation'){
+    sh "docker build -t romimage-${BUILD_NUMBER} ."
+  }
+  stage('remove old container & images'){
+    echo "previous build number: ${currentBuild.previousBuild.getNumber()}"
+    sh " docker rmi -f romimage-${currentBuild.previousBuild.getNumber()} | exit 0 "
+    sh " docker rm  -f romcontainer-${currentBuild.previousBuild.getNumber()} | exit 0 "
+    sh " docker images"
+  }
+ stage('Deployment '){
+    sh "docker run -d --name romcontainer-${BUILD_NUMBER} -p 8060:8080 romimage-${BUILD_NUMBER}:latest"
+  }
+}
